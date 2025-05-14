@@ -6,27 +6,11 @@ package sqlc
 
 import (
 	"context"
-
-	"github.com/google/uuid"
 )
 
 type Querier interface {
-	CreateAccessToken(ctx context.Context, arg CreateAccessTokenParams) (uuid.UUID, error)
-	CreateRefreshToken(ctx context.Context, arg CreateRefreshTokenParams) (uuid.UUID, error)
-	CreateSession(ctx context.Context, arg CreateSessionParams) (uuid.UUID, error)
-	DeleteSession(ctx context.Context, id uuid.UUID) error
-	DeleteUser(ctx context.Context, id uuid.UUID) error
-	GetAccessToken(ctx context.Context, token string) (AccessToken, error)
-	GetRefreshToken(ctx context.Context, token string) (RefreshToken, error)
-	GetSession(ctx context.Context, id uuid.UUID) (Session, error)
+	CreateUser(ctx context.Context, arg CreateUserParams) (User, error)
 	GetUserByEmail(ctx context.Context, email string) (User, error)
-	GetUserByIdentifier(ctx context.Context, email string) (User, error)
-	InvalidateAccessToken(ctx context.Context, id uuid.UUID) error
-	InvalidateRefreshToken(ctx context.Context, id uuid.UUID) error
-	ListSessionsByUser(ctx context.Context, userID uuid.UUID) ([]Session, error)
-	ListUsers(ctx context.Context, arg ListUsersParams) ([]User, error)
-	RegisterUser(ctx context.Context, arg RegisterUserParams) (User, error)
-	UpdateUser(ctx context.Context, arg UpdateUserParams) (User, error)
 }
 
 var _ Querier = (*Queries)(nil)

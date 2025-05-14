@@ -86,11 +86,12 @@ func (h *AuthHandler) Register(c echo.Context) error {
 	}
 
 	// Create the user
-	user, err := h.store.RegisterUser(c.Request().Context(), sqlc.RegisterUserParams{
+	user, err := h.store.CreateUser(c.Request().Context(), sqlc.CreateUserParams{
 		Email:         req.Email,
 		PasswordHash:  hashedPassword,
-		FullName:      sql.NullString{String: req.FullName, Valid: req.FullName != ""},
+		FullName:      req.FullName,
 		DateOfBirth:   dob,
+		Active:        sql.NullBool{Bool: true, Valid: true},
 		EmailVerified: sql.NullBool{Bool: false, Valid: true},
 		Role:          sql.NullString{String: "user", Valid: true},
 	})
