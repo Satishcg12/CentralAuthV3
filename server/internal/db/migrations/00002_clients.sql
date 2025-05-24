@@ -8,12 +8,10 @@ CREATE TABLE clients (
     client_id VARCHAR(50) NOT NULL UNIQUE,
     client_secret VARCHAR(100) NOT NULL,
     redirect_uris TEXT[] NOT NULL,
-    allowed_scopes TEXT[] NOT NULL,
-    logo_url TEXT,
     website_url TEXT,
-    is_trusted BOOLEAN DEFAULT FALSE,
     is_active BOOLEAN DEFAULT TRUE,
-    created_by UUID REFERENCES users(id),
+    is_confidential BOOLEAN DEFAULT TRUE,
+    created_by UUID REFERENCES users(id) ON DELETE SET NULL,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
