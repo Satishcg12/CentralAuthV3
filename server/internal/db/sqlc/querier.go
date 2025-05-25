@@ -11,14 +11,20 @@ import (
 )
 
 type Querier interface {
+	CountActiveUserSessions(ctx context.Context, userID uuid.UUID) (int64, error)
 	CountClients(ctx context.Context) (int64, error)
 	CreateClient(ctx context.Context, arg CreateClientParams) (Client, error)
+	CreateSession(ctx context.Context, arg CreateSessionParams) (Session, error)
 	CreateUser(ctx context.Context, arg CreateUserParams) (User, error)
+	DeactivateAllUserSessions(ctx context.Context, userID uuid.UUID) error
+	DeactivateSession(ctx context.Context, sessionToken string) error
 	DeleteClient(ctx context.Context, id uuid.UUID) error
 	GetAllClients(ctx context.Context) ([]GetAllClientsRow, error)
 	GetClientByClientId(ctx context.Context, clientID string) (Client, error)
 	GetClientById(ctx context.Context, id uuid.UUID) (GetClientByIdRow, error)
+	GetSessionByToken(ctx context.Context, sessionToken string) (Session, error)
 	GetUserByEmail(ctx context.Context, email string) (User, error)
+	GetUserByID(ctx context.Context, id uuid.UUID) (User, error)
 	RegenerateClientSecret(ctx context.Context, arg RegenerateClientSecretParams) (Client, error)
 	RegenerateClientSecretByClientId(ctx context.Context, arg RegenerateClientSecretByClientIdParams) (Client, error)
 	UpdateClient(ctx context.Context, arg UpdateClientParams) (UpdateClientRow, error)

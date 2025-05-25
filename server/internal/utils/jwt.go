@@ -21,15 +21,10 @@ func InitJWT(cfg config.JWTConfig) {
 
 // AccessTokenClaims represents the claims for access tokens
 type AccessTokenClaims struct {
-	UserID        int64  `json:"user_id"`
-	Username      string `json:"username"`
+	UserID        string `json:"user_id"`
 	Email         string `json:"email,omitempty"`
-	FirstName     string `json:"first_name,omitempty"`
-	LastName      string `json:"last_name,omitempty"`
+	FullName      string `json:"full_name,omitempty"`
 	EmailVerified bool   `json:"email_verified,omitempty"`
-	PhoneVerified bool   `json:"phone_verified,omitempty"`
-	// Roles         []string `json:"roles,omitempty"`
-	// Permissions   []string `json:"permissions,omitempty"`
 	jwt.RegisteredClaims
 }
 
@@ -65,7 +60,7 @@ func CreateAccessToken(claims AccessTokenClaims) (string, int, error) {
 }
 
 // GetTokenFromRequest extracts the JWT token from the Authorization header
-func GetUserIDFromAccessToken(tokenString string) (int64, error) {
+func GetUserIDFromAccessToken(tokenString string) (string, error) {
 	// Parse the token
 	token, err := jwt.ParseWithClaims(tokenString, &AccessTokenClaims{}, func(token *jwt.Token) (any, error) {
 		// Validate the signing method
@@ -78,7 +73,7 @@ func GetUserIDFromAccessToken(tokenString string) (int64, error) {
 	})
 
 	if err != nil {
-		return 0, fmt.Errorf("invalid token: %w", err)
+		return "", fmt.Errorf("invalid token: %w", err)
 	}
 
 	// Extract and validate claims
@@ -86,7 +81,7 @@ func GetUserIDFromAccessToken(tokenString string) (int64, error) {
 		return claims.UserID, nil
 	}
 
-	return 0, fmt.Errorf("invalid token claims")
+	return "", fmt.Errorf("invalid token claims")
 }
 
 // ValidateToken validates and parses a JWT token

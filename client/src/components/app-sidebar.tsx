@@ -11,7 +11,7 @@ import {
 } from "lucide-react"
 import * as React from "react"
 
-import { useLogout } from "@/api/auth/auth.query"
+import { useLogout, useLogoutAll } from "@/api/auth/auth.query"
 import Logo from "@/components/logo"
 import { NavMain } from "@/components/nav-main"
 import { NavSecondary } from "@/components/nav-secondary"
@@ -117,6 +117,9 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     mutateAsync: logout
 
   } = useLogout()
+  const {
+    mutateAsync: logoutAll
+  } = useLogoutAll()
   const navigate = useNavigate()
 
   // Handle logout
@@ -132,6 +135,21 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       toast.error(`Logout failed!`);
     } finally {
 
+    }
+  }
+
+  // Handle logout from all devices
+  const handleLogoutAll = async () => {
+    try {
+      const result = await logoutAll({})
+      // Show success message with session count
+      const sessionsEnded = result?.data?.sessions_ended || 0;
+      toast.success(`Logged out from all devices! (${sessionsEnded} sessions ended)`);
+      // Redirect to login page
+      navigate({ to: "/login" });
+    } catch (error) {
+      // Handle error
+      toast.error(`Logout from all devices failed!`);
     }
   }
 
@@ -195,6 +213,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <NavUser
           user={userData}
           onLogout={handleLogout}
+          onLogoutAll={handleLogoutAll}
           customMenuItems={customMenuItems}
         />
       </SidebarFooter>

@@ -1,6 +1,6 @@
 -- +goose Up
 -- +goose StatementBegin
-CREATE TABLE session (
+CREATE TABLE sessions (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     session_token VARCHAR(255) NOT NULL UNIQUE,
@@ -14,5 +14,5 @@ CREATE TABLE session (
 
 -- +goose Down
 -- +goose StatementBegin
-DROP TABLE IF EXISTS session;
+DROP TABLE IF EXISTS sessions;
 -- +goose StatementEnd

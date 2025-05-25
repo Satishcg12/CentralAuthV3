@@ -46,6 +46,19 @@ export const useLogout = () =>
         },
     });
 
+export const useLogoutAll = () =>
+    useMutation({
+        mutationFn: authApi.logoutAll,
+        onSuccess: () => {
+            // Clear the authentication state
+            const clearAuth = useAuthStore.getState().clearAuth;
+            clearAuth();
+        },
+        onError: (error) => {
+            console.error("Logout all error:", error);
+        },
+    });
+
 export const useRefreshToken = () =>
     useMutation({
         mutationFn: authApi.refreshToken,

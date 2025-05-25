@@ -3,6 +3,8 @@ import type { APIResponse } from "../api";
 import type {
     LoginRequest,
     LoginResponse,
+    LogoutAllRequest,
+    LogoutAllResponse,
     LogoutRequest,
     LogoutResponse,
     RefreshTokenRequest,
@@ -53,6 +55,21 @@ export const authApi = {
             return response.data;
         } catch (error) {
             throw handleApiError<LogoutResponse>(error);
+        }
+    },
+    
+    logoutAll: async (
+        data: LogoutAllRequest,
+    ): Promise<APIResponse<LogoutAllResponse>> => {
+        try {
+            // Perform the logout all request
+            const response = await API.post<APIResponse<LogoutAllResponse>>(
+                "/auth/logout-all",
+                data,
+            );
+            return response.data;
+        } catch (error) {
+            throw handleApiError<LogoutAllResponse>(error);
         }
     },
     

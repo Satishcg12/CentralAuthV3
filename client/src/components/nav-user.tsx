@@ -2,7 +2,8 @@ import {
   BadgeCheck,
   ChevronsUpDown,
   LogOut,
-  Settings
+  Settings,
+  Smartphone
 } from "lucide-react"
 
 import {
@@ -37,10 +38,11 @@ interface NavUserProps {
     is_active?: boolean
   }
   onLogout?: () => void
+  onLogoutAll?: () => void
   customMenuItems?: React.ReactNode
 }
 
-export function NavUser({ user, onLogout, customMenuItems }: NavUserProps) {
+export function NavUser({ user, onLogout, onLogoutAll, customMenuItems }: NavUserProps) {
   const { isMobile } = useSidebar()
 
   const getInitials = (name: string) => {
@@ -135,6 +137,12 @@ export function NavUser({ user, onLogout, customMenuItems }: NavUserProps) {
               <LogOut className="mr-2 h-4 w-4" />
               Log out
             </DropdownMenuItem>
+            {onLogoutAll && (
+              <DropdownMenuItem onClick={onLogoutAll}>
+                <Smartphone className="mr-2 h-4 w-4" />
+                Log out from all devices
+              </DropdownMenuItem>
+            )}
           </DropdownMenuContent>
         </DropdownMenu>
       </SidebarMenuItem>

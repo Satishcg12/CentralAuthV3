@@ -32,16 +32,16 @@ func Hash(password string) (string, error) {
 	return encoded, nil
 }
 
-func ComparePasswords(hashedPassword, password string) (bool, error) {
+func ComparePasswords(hashedPassword, password string) bool {
 	// Decode the stored hash
 	decoded, err := base64.StdEncoding.DecodeString(hashedPassword)
 	if err != nil {
-		return false, fmt.Errorf("error decoding hash: %w", err)
+		return false
 	}
 
 	// Split salt and hash
 	if len(decoded) < saltLength {
-		return false, fmt.Errorf("invalid hash format")
+		return false
 	}
 	salt := decoded[:saltLength]
 	storedHash := decoded[saltLength:]
@@ -50,5 +50,5 @@ func ComparePasswords(hashedPassword, password string) (bool, error) {
 	newHash := pbkdf2.Key([]byte(password), salt, iterations, keyLength, sha256.New)
 
 	// Compare hashes
-	return string(storedHash) == string(newHash), nil
+	return string(storedHash) == string(newHash)
 }

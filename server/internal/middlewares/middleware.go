@@ -10,6 +10,8 @@ import (
 type IMiddleware interface {
 	// Add middleware methods here
 	ValidationMiddleware() echo.MiddlewareFunc
+	AuthMiddleware() echo.MiddlewareFunc
+	OptionalAuthMiddleware() echo.MiddlewareFunc
 }
 
 type Middleware struct {

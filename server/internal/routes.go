@@ -29,7 +29,13 @@ func SetupRoutes(e *echo.Echo, store *db.Store, cfg *config.Config, cm middlewar
 	v1.GET("/health", healthHandler.Check)
 
 	// Auth Endpoints - Public
-	v1.POST("/auth/register", authHandler.Register) // User registration
+	v1.POST("/auth/register", authHandler.Register)    // User registration
+	v1.POST("/auth/login", authHandler.Login)          // User login
+	v1.POST("/auth/logout", authHandler.Logout)        // User logout
+	v1.POST("/auth/refresh", authHandler.RefreshToken) // Refresh access token
+
+	// Auth Endpoints - Authenticated
+	v1.POST("/auth/logout-all", authHandler.LogoutAll, cm.AuthMiddleware()) // User logout from all devices
 
 	// Client Endpoints - TODO: Add authentication middleware when available
 	v1.POST("/clients", clientHandler.CreateClient)                                                               // Create new client

@@ -65,24 +65,41 @@ func (h *AuthHandler) Register(c echo.Context) error {
 		)
 	}
 
-	// Parse date of birth if provided
-	var dob sql.NullTime
-	if req.DateOfBirth != "" {
-		parsedDOB, err := time.Parse("2006-01-02", req.DateOfBirth)
-		if err != nil {
-			return utils.RespondWithError(
-				c,
-				utils.StatusCodeBadRequest,
-				"Invalid date format",
-				utils.ErrorCodeInvalidRequest,
-				"Date of birth must be in YYYY-MM-DD format",
-				err,
-			)
-		}
-		dob = sql.NullTime{
-			Time:  parsedDOB,
-			Valid: true,
-		}
+	// Parse date of birth (required field)
+	parsedDOB, err := time.Parse("2006-01-02", req.DateOfBirth)
+	if err != nil {
+		return utils.RespondWithError(
+			c,
+			utils.StatusCodeBadRequest,
+			"Invalid date format",
+			utils.ErrorCodeInvalidRequest,
+			"Date of birth must be in YYYY-MM-DD format",
+			err,
+		)
+	}
+
+	// Validate age (must be greater than 12)
+	now := time.Now()
+	age := now.Year() - parsedDOB.Year()
+	if now.YearDay() < parsedDOB.YearDay() {
+		age--
+	}
+	if age <= 12 {
+		return utils.RespondWithError(
+			c,
+			utils.StatusCodeBadRequest,
+			"Age requirement not met",
+			utils.ErrorCodeInvalidRequest,
+			"User must be older than 12 years",
+			map[string]any{
+				"date_of_birth": "User must be older than 12 years",
+			},
+		)
+	}
+
+	dob := sql.NullTime{
+		Time:  parsedDOB,
+		Valid: true,
 	}
 
 	// Create the user

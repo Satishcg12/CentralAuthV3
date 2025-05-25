@@ -33,16 +33,16 @@ type FieldErrors = {
 
 // Define validation schemas for each step
 const step1Schema = z.object({
-  full_name: z.string().min(2, "Full name must be at least 2 characters"),
+  full_name: z.string().min(2, "Full name must be at least 2 characters").max(255, "Full name must be less than 255 characters"),
 })
 
 const step2Schema = z.object({
-  email: z.string().email("Please enter a valid email address"),
-  date_of_birth: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Date must be in YYYY-MM-DD format").optional()
+  email: z.string().email("Please enter a valid email address").max(255, "Email must be less than 255 characters"),
+  date_of_birth: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Date must be in YYYY-MM-DD format")
 })
 
 const step3Schema = z.object({
-  password: z.string().min(8, "Password must be at least 8 characters"),
+  password: z.string().min(8, "Password must be at least 8 characters").max(72, "Password must be less than 72 characters"),
   confirm_password: z.string()
 })
 
@@ -185,7 +185,7 @@ const Step2Form = ({ formData, onSubmit, handleBack, isSubmitting, fieldErrors, 
           name="date_of_birth"
           render={({ field }) => (
             <FormItem className="grid gap-3">
-              <FormLabel>Date of Birth (Optional)</FormLabel>
+              <FormLabel>Date of Birth</FormLabel>
               <FormControl>
                 <Input
                   type="date"
@@ -198,7 +198,7 @@ const Step2Form = ({ formData, onSubmit, handleBack, isSubmitting, fieldErrors, 
                 />
               </FormControl>
               <FormDescription>
-                Your date of birth (Format: YYYY-MM-DD)
+                Your date of birth is required (Format: YYYY-MM-DD)
               </FormDescription>
               <FormMessage />
             </FormItem>
@@ -371,17 +371,19 @@ export const MultiStepRegistrationForm = ({
         });
       } else {
         // Final submission - validate all required fields
-        if (!updatedData.email || !updatedData.password) {
+        if (!updatedData.email || !updatedData.password || !updatedData.full_name || !updatedData.date_of_birth) {
           throw new Error("Missing required fields");
         }
 
         // Call the registration API
-        await mutateAsync({
+        const registrationData = {
           email: updatedData.email,
           password: updatedData.password,
-          full_name: updatedData.full_name,
-          date_of_birth: updatedData.date_of_birth
-        });
+          full_name: updatedData.full_name.trim(),
+          date_of_birth: updatedData.date_of_birth.trim(),
+        };
+
+        await mutateAsync(registrationData);
 
         toast.success("Registration successful!", {
           description: "You can now log in to your account."
@@ -394,14 +396,14 @@ export const MultiStepRegistrationForm = ({
       console.error("Registration error:", err);
 
       // Handle and categorize API errors
-      if ('error' in err && 'message' in err) {
+      if (err.error?.code) {
         // Handle field-specific errors
-        if (err.error?.code === 'validation_failed') {
+        if (err.error.code === 'validation_failed' && err.error.details) {
           // If API returns field-specific errors in the details object
           setFieldErrors(prev => ({ ...prev, ...err.error?.details }));
 
           // Navigate to the appropriate step based on the field with error
-          const errorFields = Object.keys(err.error?.details ?? {}) as Array<keyof FieldErrors>;
+          const errorFields = Object.keys(err.error.details) as Array<keyof FieldErrors>;
           if (errorFields.some(field => field === 'email' || field === 'date_of_birth')) {
             setStep(1); // Account details step
           } else if (errorFields.some(field => field === 'password' || field === 'confirm_password')) {
@@ -411,8 +413,8 @@ export const MultiStepRegistrationForm = ({
           }
         }
         // Handle specific error codes
-        else if (err.error?.code === 'duplicate_entry') {
-          if (err.error.description?.includes("email")) {
+        else if (err.error.code === 'duplicate_entry') {
+          if (err.error.description?.includes("email") || err.error.description?.includes("Email")) {
             setFieldErrors(prev => ({ ...prev, email: "This email is already registered" }));
             setFormData(prev => ({ ...prev, email: "" }));
             setStep(1);
@@ -421,15 +423,20 @@ export const MultiStepRegistrationForm = ({
             setFieldErrors(prev => ({ ...prev, general: err.error?.description || "Duplicate entry detected" }));
           }
         }
-        // General error message
-        else if (err.message) {
-          setFieldErrors(prev => ({ ...prev, general: err.message }));
-          toast.error(err.message);
-        } else {
-          setFieldErrors(prev => ({ ...prev, general: "An error occurred. Please try again." }));
-          toast.error("An error occurred. Please try again.");
+        // General error message from backend
+        else {
+          const errorMessage = err.error.description || err.message || "An error occurred. Please try again.";
+          setFieldErrors(prev => ({ ...prev, general: errorMessage }));
+          toast.error(errorMessage);
         }
-      } else if (error instanceof z.ZodError) {
+      }
+      // Handle cases where we have a message but no structured error
+      else if (err.message) {
+        setFieldErrors(prev => ({ ...prev, general: err.message }));
+        toast.error(err.message);
+      }
+      // Handle validation errors from zod
+      else if (error instanceof z.ZodError) {
         // Handle validation errors
         const newErrors: FieldErrors = {};
         error.errors.forEach(err => {
