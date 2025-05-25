@@ -63,6 +63,6 @@ The project follows a domain-driven design with clear separation of concerns:
 
 
 # Goal
-The goal of this project is to create a simple and efficient SSO solution that can be easily integrated into various applications. The project should be modular, maintainable, and scalable to accommodate future growth and additional features.( it won't be using PKCE anymore, but it will be using a custom JWT implementation)
+The goal of this project is to create a simple and efficient SSO solution that can be easily integrated into various applications. The project should be modular, maintainable, and scalable to accommodate future growth and additional features.( it won't be using PKCE anymore, but it will be using a custom JWT implementation), there won't be any scope and grant types
 
-for now focus only on the backend api side only 
+for now focus only on the backend api side only

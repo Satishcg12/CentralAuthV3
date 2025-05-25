@@ -5,6 +5,7 @@ import (
 	"github.com/Satishcg12/CentralAuthV3/server/internal/db"
 	"github.com/Satishcg12/CentralAuthV3/server/internal/features"
 	"github.com/Satishcg12/CentralAuthV3/server/internal/features/auth"
+	"github.com/Satishcg12/CentralAuthV3/server/internal/features/client"
 	"github.com/Satishcg12/CentralAuthV3/server/internal/features/health"
 	"github.com/Satishcg12/CentralAuthV3/server/internal/middlewares"
 	"github.com/labstack/echo/v4"
@@ -19,6 +20,7 @@ func SetupRoutes(e *echo.Echo, store *db.Store, cfg *config.Config, cm middlewar
 
 	healthHandler := health.NewHealthHandler(ah)
 	authHandler := auth.NewAuthHandler(ah)
+	clientHandler := client.NewClientHandler(ah)
 
 	// API v1 group - Register API routes FIRST
 	v1 := e.Group("/api/v1")
@@ -29,7 +31,14 @@ func SetupRoutes(e *echo.Echo, store *db.Store, cfg *config.Config, cm middlewar
 	// Auth Endpoints - Public
 	v1.POST("/auth/register", authHandler.Register) // User registration
 
-	// client authentication
+	// Client Endpoints - TODO: Add authentication middleware when available
+	v1.POST("/clients", clientHandler.CreateClient)                                                               // Create new client
+	v1.GET("/clients", clientHandler.GetAllClients)                                                               // List all clients
+	v1.GET("/clients/:id", clientHandler.GetClientById)                                                           // Get client by UUID
+	v1.PUT("/clients/:id", clientHandler.UpdateClient)                                                            // Update client by UUID
+	v1.DELETE("/clients/:id", clientHandler.DeleteClient)                                                         // Delete client by UUID
+	v1.POST("/clients/:id/regenerate-secret", clientHandler.RegenerateClientSecret)                               // Regenerate secret by UUID
+	v1.POST("/clients/by-client-id/:client_id/regenerate-secret", clientHandler.RegenerateClientSecretByClientID) // Regenerate secret by client_id
 
 	// Static file serving for assets - MUST come before SPA fallback
 	e.Static("/assets", "./dist/assets")

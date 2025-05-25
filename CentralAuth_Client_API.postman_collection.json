@@ -1,0 +1,469 @@
+{
+	"info": {
+		"_postman_id": "centralauth-client-api",
+		"name": "CentralAuth Client API",
+		"description": "Complete CRUD API collection for OAuth clients in CentralAuth SSO system",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "centralauth"
+	},
+	"item": [
+		{
+			"name": "Health Check",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/api/v1/health",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"health"
+					]
+				},
+				"description": "Check if the server is running and healthy"
+			},
+			"response": []
+		},
+		{
+			"name": "Create Client",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"if (pm.response.code === 201) {",
+							"    const responseJson = pm.response.json();",
+							"    pm.test(\"Client created successfully\", function () {",
+							"        pm.expect(responseJson.status).to.eql(\"success\");",
+							"        pm.expect(responseJson.data).to.have.property(\"client\");",
+							"        pm.expect(responseJson.data.client).to.have.property(\"id\");",
+							"        pm.expect(responseJson.data.client).to.have.property(\"client_id\");",
+							"        pm.expect(responseJson.data.client).to.have.property(\"client_secret\");",
+							"        pm.expect(responseJson.data.client).to.have.property(\"name\");",
+							"    });",
+							"    ",
+							"    // Store client details for other requests",
+							"    if (responseJson.data && responseJson.data.client) {",
+							"        pm.environment.set(\"client_uuid\", responseJson.data.client.id);",
+							"        pm.environment.set(\"client_id\", responseJson.data.client.client_id);",
+							"        pm.environment.set(\"client_secret\", responseJson.data.client.client_secret);",
+							"    }",
+							"}"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"name\": \"My Test Application\",\n  \"description\": \"A test OAuth client for development purposes\",\n  \"redirect_uris\": [\n    \"http://localhost:3000/callback\",\n    \"https://myapp.example.com/oauth/callback\"\n  ],\n  \"website_url\": \"https://myapp.example.com\",\n  \"is_confidential\": true\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/api/v1/clients",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"clients"
+					]
+				},
+				"description": "Create a new OAuth client with client_id and client_secret generated automatically"
+			},
+			"response": []
+		},
+		{
+			"name": "Get All Clients",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"if (pm.response.code === 200) {",
+							"    const responseJson = pm.response.json();",
+							"    pm.test(\"Clients retrieved successfully\", function () {",
+							"        pm.expect(responseJson.status).to.eql(\"success\");",
+							"        pm.expect(responseJson.data).to.have.property(\"clients\");",
+							"        pm.expect(responseJson.data).to.have.property(\"total\");",
+							"        pm.expect(responseJson.data.clients).to.be.an(\"array\");",
+							"    });",
+							"}"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/api/v1/clients",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"clients"
+					]
+				},
+				"description": "Retrieve all OAuth clients with pagination support and total count"
+			},
+			"response": []
+		},
+		{
+			"name": "Get Client by ID",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"if (pm.response.code === 200) {",
+							"    const responseJson = pm.response.json();",
+							"    pm.test(\"Client retrieved successfully\", function () {",
+							"        pm.expect(responseJson.status).to.eql(\"success\");",
+							"        pm.expect(responseJson.data).to.have.property(\"client\");",
+							"        pm.expect(responseJson.data.client).to.have.property(\"id\");",
+							"        pm.expect(responseJson.data.client).to.have.property(\"name\");",
+							"    });",
+							"} else if (pm.response.code === 404) {",
+							"    pm.test(\"Client not found\", function () {",
+							"        const responseJson = pm.response.json();",
+							"        pm.expect(responseJson.status).to.eql(\"error\");",
+							"    });",
+							"}"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/api/v1/clients/{{client_uuid}}",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"clients",
+						"{{client_uuid}}"
+					]
+				},
+				"description": "Get a specific OAuth client by its UUID. Replace {{client_uuid}} with actual client UUID."
+			},
+			"response": []
+		},
+		{
+			"name": "Update Client",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"if (pm.response.code === 200) {",
+							"    const responseJson = pm.response.json();",
+							"    pm.test(\"Client updated successfully\", function () {",
+							"        pm.expect(responseJson.status).to.eql(\"success\");",
+							"        pm.expect(responseJson.data).to.have.property(\"client\");",
+							"        pm.expect(responseJson.data.client.name).to.eql(\"Updated Application Name\");",
+							"    });",
+							"} else if (pm.response.code === 404) {",
+							"    pm.test(\"Client not found\", function () {",
+							"        const responseJson = pm.response.json();",
+							"        pm.expect(responseJson.status).to.eql(\"error\");",
+							"    });",
+							"}"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "PUT",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"name\": \"Updated Application Name\",\n  \"description\": \"Updated description for the OAuth client\",\n  \"redirect_uris\": [\n    \"http://localhost:3000/callback\",\n    \"https://myapp.example.com/oauth/callback\",\n    \"https://staging.myapp.example.com/oauth/callback\"\n  ],\n  \"website_url\": \"https://myapp.example.com\",\n  \"is_confidential\": false\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/api/v1/clients/{{client_uuid}}",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"clients",
+						"{{client_uuid}}"
+					]
+				},
+				"description": "Update an existing OAuth client. Replace {{client_uuid}} with actual client UUID."
+			},
+			"response": []
+		},
+		{
+			"name": "Delete Client",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"if (pm.response.code === 200) {",
+							"    const responseJson = pm.response.json();",
+							"    pm.test(\"Client deleted successfully\", function () {",
+							"        pm.expect(responseJson.status).to.eql(\"success\");",
+							"        pm.expect(responseJson.message).to.include(\"deleted\");",
+							"    });",
+							"} else if (pm.response.code === 404) {",
+							"    pm.test(\"Client not found\", function () {",
+							"        const responseJson = pm.response.json();",
+							"        pm.expect(responseJson.status).to.eql(\"error\");",
+							"    });",
+							"}"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "DELETE",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/api/v1/clients/{{client_uuid}}",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"clients",
+						"{{client_uuid}}"
+					]
+				},
+				"description": "Delete an OAuth client permanently. Replace {{client_uuid}} with actual client UUID."
+			},
+			"response": []
+		},
+		{
+			"name": "Regenerate Client Secret (by UUID)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"if (pm.response.code === 200) {",
+							"    const responseJson = pm.response.json();",
+							"    pm.test(\"Client secret regenerated successfully\", function () {",
+							"        pm.expect(responseJson.status).to.eql(\"success\");",
+							"        pm.expect(responseJson.data).to.have.property(\"client\");",
+							"        pm.expect(responseJson.data.client).to.have.property(\"client_secret\");",
+							"    });",
+							"    ",
+							"    // Update the stored client secret",
+							"    if (responseJson.data && responseJson.data.client) {",
+							"        pm.environment.set(\"client_secret\", responseJson.data.client.client_secret);",
+							"    }",
+							"} else if (pm.response.code === 404) {",
+							"    pm.test(\"Client not found\", function () {",
+							"        const responseJson = pm.response.json();",
+							"        pm.expect(responseJson.status).to.eql(\"error\");",
+							"    });",
+							"}"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/api/v1/clients/{{client_uuid}}/regenerate-secret",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"clients",
+						"{{client_uuid}}",
+						"regenerate-secret"
+					]
+				},
+				"description": "Generate a new client_secret for an existing OAuth client using its UUID. Replace {{client_uuid}} with actual client UUID."
+			},
+			"response": []
+		},
+		{
+			"name": "Regenerate Client Secret (by Client ID)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"if (pm.response.code === 200) {",
+							"    const responseJson = pm.response.json();",
+							"    pm.test(\"Client secret regenerated successfully\", function () {",
+							"        pm.expect(responseJson.status).to.eql(\"success\");",
+							"        pm.expect(responseJson.data).to.have.property(\"client\");",
+							"        pm.expect(responseJson.data.client).to.have.property(\"client_secret\");",
+							"    });",
+							"    ",
+							"    // Update the stored client secret",
+							"    if (responseJson.data && responseJson.data.client) {",
+							"        pm.environment.set(\"client_secret\", responseJson.data.client.client_secret);",
+							"    }",
+							"} else if (pm.response.code === 404) {",
+							"    pm.test(\"Client not found\", function () {",
+							"        const responseJson = pm.response.json();",
+							"        pm.expect(responseJson.status).to.eql(\"error\");",
+							"    });",
+							"}"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/api/v1/clients/by-client-id/{{client_id}}/regenerate-secret",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"clients",
+						"by-client-id",
+						"{{client_id}}",
+						"regenerate-secret"
+					]
+				},
+				"description": "Generate a new client_secret for an existing OAuth client using its client_id. Replace {{client_id}} with actual client_id string."
+			},
+			"response": []
+		},
+		{
+			"name": "User Registration",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"if (pm.response.code === 201) {",
+							"    const responseJson = pm.response.json();",
+							"    pm.test(\"User registered successfully\", function () {",
+							"        pm.expect(responseJson.status).to.eql(\"success\");",
+							"        pm.expect(responseJson.data).to.have.property(\"user\");",
+							"        pm.expect(responseJson.data.user).to.have.property(\"id\");",
+							"        pm.expect(responseJson.data.user).to.have.property(\"email\");",
+							"    });",
+							"} else if (pm.response.code === 400) {",
+							"    pm.test(\"Validation error\", function () {",
+							"        const responseJson = pm.response.json();",
+							"        pm.expect(responseJson.status).to.eql(\"error\");",
+							"    });",
+							"}"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"email\": \"user@example.com\",\n  \"password\": \"SecurePassword123!\",\n  \"first_name\": \"John\",\n  \"last_name\": \"Doe\"\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/api/v1/auth/register",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"auth",
+						"register"
+					]
+				},
+				"description": "Register a new user account"
+			},
+			"response": []
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:8080",
+			"type": "string",
+			"description": "Base URL for the CentralAuth API server"
+		},
+		{
+			"key": "client_uuid",
+			"value": "",
+			"type": "string",
+			"description": "UUID of the OAuth client (replace with actual UUID from Create Client response)"
+		},
+		{
+			"key": "client_id",
+			"value": "",
+			"type": "string",
+			"description": "Client ID string (replace with actual client_id from Create Client response)"
+		},
+		{
+			"key": "client_secret",
+			"value": "",
+			"type": "string",
+			"description": "Client secret (automatically updated when regenerating secrets)"
+		}
+	]
+}

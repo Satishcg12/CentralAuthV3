@@ -6,176 +6,66 @@ package sqlc
 
 import (
 	"database/sql"
-	"database/sql/driver"
-	"fmt"
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/sqlc-dev/pqtype"
 )
-
-type AuditAction string
-
-const (
-	AuditActionLogin             AuditAction = "login"
-	AuditActionLogout            AuditAction = "logout"
-	AuditActionRegister          AuditAction = "register"
-	AuditActionPasswordReset     AuditAction = "password_reset"
-	AuditActionEmailVerification AuditAction = "email_verification"
-	AuditActionTokenIssue        AuditAction = "token_issue"
-	AuditActionTokenRevoke       AuditAction = "token_revoke"
-	AuditActionClientCreate      AuditAction = "client_create"
-	AuditActionClientUpdate      AuditAction = "client_update"
-	AuditActionClientDelete      AuditAction = "client_delete"
-	AuditActionConsentGrant      AuditAction = "consent_grant"
-	AuditActionConsentRevoke     AuditAction = "consent_revoke"
-)
-
-func (e *AuditAction) Scan(src interface{}) error {
-	switch s := src.(type) {
-	case []byte:
-		*e = AuditAction(s)
-	case string:
-		*e = AuditAction(s)
-	default:
-		return fmt.Errorf("unsupported scan type for AuditAction: %T", src)
-	}
-	return nil
-}
-
-type NullAuditAction struct {
-	AuditAction AuditAction `json:"audit_action"`
-	Valid       bool        `json:"valid"` // Valid is true if AuditAction is not NULL
-}
-
-// Scan implements the Scanner interface.
-func (ns *NullAuditAction) Scan(value interface{}) error {
-	if value == nil {
-		ns.AuditAction, ns.Valid = "", false
-		return nil
-	}
-	ns.Valid = true
-	return ns.AuditAction.Scan(value)
-}
-
-// Value implements the driver Valuer interface.
-func (ns NullAuditAction) Value() (driver.Value, error) {
-	if !ns.Valid {
-		return nil, nil
-	}
-	return string(ns.AuditAction), nil
-}
-
-type AccessToken struct {
-	ID        uuid.UUID    `json:"id"`
-	Token     string       `json:"token"`
-	ClientID  uuid.UUID    `json:"client_id"`
-	UserID    uuid.UUID    `json:"user_id"`
-	Scope     []string     `json:"scope"`
-	ExpiresAt time.Time    `json:"expires_at"`
-	CreatedAt sql.NullTime `json:"created_at"`
-}
-
-type ApiScope struct {
-	ID            uuid.UUID      `json:"id"`
-	Name          string         `json:"name"`
-	DisplayName   string         `json:"display_name"`
-	Description   sql.NullString `json:"description"`
-	IsDefault     sql.NullBool   `json:"is_default"`
-	RequiresAdmin sql.NullBool   `json:"requires_admin"`
-	CreatedAt     sql.NullTime   `json:"created_at"`
-	UpdatedAt     sql.NullTime   `json:"updated_at"`
-}
-
-type AuditLog struct {
-	ID        uuid.UUID             `json:"id"`
-	UserID    uuid.NullUUID         `json:"user_id"`
-	ClientID  uuid.NullUUID         `json:"client_id"`
-	Action    AuditAction           `json:"action"`
-	IpAddress sql.NullString        `json:"ip_address"`
-	UserAgent sql.NullString        `json:"user_agent"`
-	Details   pqtype.NullRawMessage `json:"details"`
-	CreatedAt sql.NullTime          `json:"created_at"`
-}
 
 type AuthorizationCode struct {
 	ID          uuid.UUID    `json:"id"`
-	Code        string       `json:"code"`
-	ClientID    uuid.UUID    `json:"client_id"`
 	UserID      uuid.UUID    `json:"user_id"`
+	ClientID    uuid.UUID    `json:"client_id"`
+	Code        string       `json:"code"`
 	RedirectUri string       `json:"redirect_uri"`
-	Scope       []string     `json:"scope"`
-	ExpiresAt   time.Time    `json:"expires_at"`
-	Used        sql.NullBool `json:"used"`
 	CreatedAt   sql.NullTime `json:"created_at"`
+	ExpiresAt   time.Time    `json:"expires_at"`
+	IsUsed      sql.NullBool `json:"is_used"`
 }
 
 type Client struct {
-	ID            uuid.UUID      `json:"id"`
-	Name          string         `json:"name"`
-	Description   sql.NullString `json:"description"`
-	ClientID      string         `json:"client_id"`
-	ClientSecret  string         `json:"client_secret"`
-	RedirectUris  []string       `json:"redirect_uris"`
-	AllowedScopes []string       `json:"allowed_scopes"`
-	LogoUrl       sql.NullString `json:"logo_url"`
-	WebsiteUrl    sql.NullString `json:"website_url"`
-	IsTrusted     sql.NullBool   `json:"is_trusted"`
-	IsActive      sql.NullBool   `json:"is_active"`
-	CreatedBy     uuid.NullUUID  `json:"created_by"`
-	CreatedAt     sql.NullTime   `json:"created_at"`
-	UpdatedAt     sql.NullTime   `json:"updated_at"`
+	ID             uuid.UUID      `json:"id"`
+	Name           string         `json:"name"`
+	Description    sql.NullString `json:"description"`
+	ClientID       string         `json:"client_id"`
+	ClientSecret   string         `json:"client_secret"`
+	RedirectUris   []string       `json:"redirect_uris"`
+	WebsiteUrl     sql.NullString `json:"website_url"`
+	IsActive       sql.NullBool   `json:"is_active"`
+	IsConfidential sql.NullBool   `json:"is_confidential"`
+	CreatedBy      uuid.NullUUID  `json:"created_by"`
+	CreatedAt      sql.NullTime   `json:"created_at"`
+	UpdatedAt      sql.NullTime   `json:"updated_at"`
 }
 
 type RefreshToken struct {
 	ID        uuid.UUID    `json:"id"`
-	Token     string       `json:"token"`
-	ClientID  uuid.UUID    `json:"client_id"`
 	UserID    uuid.UUID    `json:"user_id"`
-	Scope     []string     `json:"scope"`
-	ExpiresAt time.Time    `json:"expires_at"`
+	ClientID  uuid.UUID    `json:"client_id"`
+	Token     string       `json:"token"`
 	CreatedAt sql.NullTime `json:"created_at"`
+	ExpiresAt time.Time    `json:"expires_at"`
+	IsActive  sql.NullBool `json:"is_active"`
 }
 
 type Session struct {
 	ID           uuid.UUID      `json:"id"`
 	UserID       uuid.UUID      `json:"user_id"`
-	IpAddress    sql.NullString `json:"ip_address"`
+	SessionToken string         `json:"session_token"`
 	UserAgent    sql.NullString `json:"user_agent"`
-	LastActivity sql.NullTime   `json:"last_activity"`
-	ExpiresAt    time.Time      `json:"expires_at"`
+	IpAddress    sql.NullString `json:"ip_address"`
 	CreatedAt    sql.NullTime   `json:"created_at"`
-	UpdatedAt    sql.NullTime   `json:"updated_at"`
+	ExpiresAt    time.Time      `json:"expires_at"`
+	IsActive     sql.NullBool   `json:"is_active"`
 }
 
 type User struct {
-	ID            uuid.UUID      `json:"id"`
-	Email         string         `json:"email"`
-	PasswordHash  string         `json:"password_hash"`
-	FullName      string         `json:"full_name"`
-	DateOfBirth   sql.NullTime   `json:"date_of_birth"`
-	EmailVerified sql.NullBool   `json:"email_verified"`
-	Active        sql.NullBool   `json:"active"`
-	Role          sql.NullString `json:"role"`
-	CreatedAt     sql.NullTime   `json:"created_at"`
-	UpdatedAt     sql.NullTime   `json:"updated_at"`
-}
-
-type UserConsent struct {
-	ID        uuid.UUID    `json:"id"`
-	UserID    uuid.UUID    `json:"user_id"`
-	ClientID  uuid.UUID    `json:"client_id"`
-	Scope     []string     `json:"scope"`
-	CreatedAt sql.NullTime `json:"created_at"`
-	UpdatedAt sql.NullTime `json:"updated_at"`
-}
-
-type VerificationToken struct {
-	ID        uuid.UUID    `json:"id"`
-	Token     string       `json:"token"`
-	UserID    uuid.UUID    `json:"user_id"`
-	Type      string       `json:"type"`
-	ExpiresAt time.Time    `json:"expires_at"`
-	Used      sql.NullBool `json:"used"`
-	CreatedAt sql.NullTime `json:"created_at"`
+	ID            uuid.UUID    `json:"id"`
+	Email         string       `json:"email"`
+	PasswordHash  string       `json:"password_hash"`
+	FullName      string       `json:"full_name"`
+	DateOfBirth   sql.NullTime `json:"date_of_birth"`
+	EmailVerified sql.NullBool `json:"email_verified"`
+	Active        sql.NullBool `json:"active"`
+	CreatedAt     sql.NullTime `json:"created_at"`
+	UpdatedAt     sql.NullTime `json:"updated_at"`
 }

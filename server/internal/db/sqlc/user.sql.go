@@ -18,22 +18,20 @@ INSERT INTO users (
     date_of_birth,
     email_verified,
     active,
-    role,
     created_at,
     updated_at
 ) VALUES (
-    $1, $2, $3, $4, $5, $6, $7, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
-) RETURNING id, email, password_hash, full_name, date_of_birth, email_verified, active, role, created_at, updated_at
+    $1, $2, $3, $4, $5, $6, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
+) RETURNING id, email, password_hash, full_name, date_of_birth, email_verified, active, created_at, updated_at
 `
 
 type CreateUserParams struct {
-	Email         string         `json:"email"`
-	PasswordHash  string         `json:"password_hash"`
-	FullName      string         `json:"full_name"`
-	DateOfBirth   sql.NullTime   `json:"date_of_birth"`
-	EmailVerified sql.NullBool   `json:"email_verified"`
-	Active        sql.NullBool   `json:"active"`
-	Role          sql.NullString `json:"role"`
+	Email         string       `json:"email"`
+	PasswordHash  string       `json:"password_hash"`
+	FullName      string       `json:"full_name"`
+	DateOfBirth   sql.NullTime `json:"date_of_birth"`
+	EmailVerified sql.NullBool `json:"email_verified"`
+	Active        sql.NullBool `json:"active"`
 }
 
 func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, error) {
@@ -44,7 +42,6 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, e
 		arg.DateOfBirth,
 		arg.EmailVerified,
 		arg.Active,
-		arg.Role,
 	)
 	var i User
 	err := row.Scan(
@@ -55,7 +52,6 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, e
 		&i.DateOfBirth,
 		&i.EmailVerified,
 		&i.Active,
-		&i.Role,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)
@@ -63,7 +59,7 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, e
 }
 
 const getUserByEmail = `-- name: GetUserByEmail :one
-SELECT id, email, password_hash, full_name, date_of_birth, email_verified, active, role, created_at, updated_at 
+SELECT id, email, password_hash, full_name, date_of_birth, email_verified, active, created_at, updated_at 
 FROM users
 WHERE email = $1 
 LIMIT 1
@@ -80,7 +76,6 @@ func (q *Queries) GetUserByEmail(ctx context.Context, email string) (User, error
 		&i.DateOfBirth,
 		&i.EmailVerified,
 		&i.Active,
-		&i.Role,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)

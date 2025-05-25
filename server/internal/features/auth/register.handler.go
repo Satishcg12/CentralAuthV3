@@ -93,7 +93,6 @@ func (h *AuthHandler) Register(c echo.Context) error {
 		DateOfBirth:   dob,
 		Active:        sql.NullBool{Bool: true, Valid: true},
 		EmailVerified: sql.NullBool{Bool: false, Valid: true},
-		Role:          sql.NullString{String: "user", Valid: true},
 	})
 	if err != nil {
 		return utils.RespondWithError(
