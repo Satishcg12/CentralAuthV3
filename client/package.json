@@ -3,6 +3,7 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "dev-client": "vite --port 3000", 
     "dev": "tsc && vite build --watch --outDir ../server/dist",
     "start": "vite --port 3000",
     "build": "vite build && tsc",
